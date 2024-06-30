@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
 #[command(name = "mini-cache", version = "1.0", about = "A simple in-memory database")]
+#[command(author = "AbeRodz")]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
