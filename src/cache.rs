@@ -1,7 +1,7 @@
 use  std::collections::HashMap;
 use std::sync::{Arc,Mutex};
 
-
+#[derive(Debug,Clone)]
 pub struct CacheDB{
     store: Arc<Mutex<HashMap<String, String>>>,
 }
