@@ -48,3 +48,9 @@ The storage is capable of the following commands:
     ``` bash
     LIST
     ```
+
+- TTL
+     -
+    ``` bash
+    TTL key
+    ```
