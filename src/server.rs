@@ -1,5 +1,5 @@
 use std::error::Error;
-
+use std::time::Duration;
 use crate::cache::CacheDB;
 use tokio::{io::{AsyncReadExt, AsyncWriteExt}, net::{TcpListener,TcpStream}};
 use tracing::{info,error};
@@ -31,16 +31,24 @@ impl Handler {
     async fn request_handler(&mut self, request: &str) -> String{
         let parts: Vec<&str> = request.trim().split_whitespace().collect();
         match parts.as_slice() {
+            ["SET", key, value, expiration_str ] => {
+                let expiration_duration = match expiration_str.parse::<u64>() {
+                    Ok(seconds) => Some(Duration::new(seconds, 0)),
+                    Err(_) => return "ERROR: Invalid expiration time\n".to_string(),
+                };
+                self.db.set(key.to_string(), value.to_string(),expiration_duration);
+                "OK\n".to_string()
+            }
             ["SET", key, value] => {
-
-                self.db.set(key.to_string(), value.to_string());
+                // No expiration provided
+                self.db.set(key.to_string(), value.to_string(), None);
                 "OK\n".to_string()
             }
             ["GET", key] => {
 
                 match self.db.get(key.to_string()) {
                     Some(value) => format!("{}\n", value),
-                    None => "ERROR: Key not found\n".to_string(),
+                    None => "ERROR: Key not found or expired\n".to_string(),
                 }
             }
             ["DEL", key] => {
@@ -52,6 +60,13 @@ impl Handler {
 
                 let keys: Vec<String> = self.db.list();
                 format!("{}\n", keys.join(" "))
+            }
+            ["TTL", key] => {
+
+                match self.db.get_ttl(key.to_string()) {
+                    Some(value) => format!("TTL: {} seconds\n", value.as_secs()),
+                    None => "ERROR: Key not found or expired\n".to_string(),
+                }
             }
             _ => "ERROR: Unknown command\n".to_string(),
         }

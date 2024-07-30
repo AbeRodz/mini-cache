@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::time::Duration;
 use tokio::net::TcpListener;
 use cli_app::cache::CacheDB;
 use cli_app::server::Listener;
@@ -8,7 +9,7 @@ use tracing::info;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     logger::init();
-    let cache = CacheDB::new();
+    let cache = CacheDB::new(Duration::new(1, 0));
     let port = "127.0.0.1:8080";
     let listener = TcpListener::bind(port).await?;
     presentation();
